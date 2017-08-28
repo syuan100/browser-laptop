@@ -4,27 +4,23 @@
 
 const React = require('react')
 const {StyleSheet, css} = require('aphrodite/no-important')
-const Immutable = require('immutable')
 
 // Components
 const ReduxComponent = require('../../reduxComponent')
 const TabIcon = require('./tabIcon')
 
 // State
-const tabContentState = require('../../../../common/state/tabContentState')
 const tabState = require('../../../../common/state/tabState')
+const tabCloseState = require('../../../../common/state/tabContentState/tabCloseState')
+const frameStateUtil = require('../../../../../js/state/frameStateUtil')
 
 // Actions
 const windowActions = require('../../../../../js/actions/windowActions')
 const appActions = require('../../../../../js/actions/appActions')
 
-// Utils
-const frameStateUtil = require('../../../../../js/state/frameStateUtil')
-
 // Styles
-const globalStyles = require('../../styles/global')
-const closeTabHoverSvg = require('../../../../extensions/brave/img/tabs/close_btn_hover.svg')
-const closeTabSvg = require('../../../../extensions/brave/img/tabs/close_btn_normal.svg')
+const {spacing} = require('../../styles/global')
+const closeTabSvg = require('../../../../extensions/brave/img/tabs/close_btn.svg')
 
 class CloseTabIcon extends React.Component {
   constructor (props) {
@@ -50,32 +46,27 @@ class CloseTabIcon extends React.Component {
   mergeProps (state, ownProps) {
     const currentWindow = state.get('currentWindow')
     const frameKey = ownProps.frameKey
-    const frame = frameStateUtil.getFrameByKey(currentWindow, frameKey) || Immutable.Map()
-    const tabId = frame.get('tabId', tabState.TAB_ID_NONE)
-    const isPinnedTab = tabState.isTabPinned(state, tabId)
+    const tabId = frameStateUtil.getTabIdByFrameKey(currentWindow, frameKey)
 
     const props = {}
-    // used in renderer
-    props.showCloseIcon = !isPinnedTab &&
-      (
-        tabContentState.hasRelativeCloseIcon(currentWindow, frameKey) ||
-        tabContentState.hasFixedCloseIcon(currentWindow, frameKey)
-      )
-
-    // used in functions
-    props.frameKey = frameKey
+    props.isPinned = tabState.isTabPinned(state, tabId)
     props.fixTabWidth = ownProps.fixTabWidth
+    props.hasFrame = frameStateUtil.hasFrame(currentWindow, frameKey)
+    props.showCloseIcon = tabCloseState.showCloseTabIcon(currentWindow, frameKey)
     props.tabId = tabId
-    props.hasFrame = !frame.isEmpty()
 
     return props
   }
 
   render () {
+    if (this.props.isPinned || !this.props.showCloseIcon) {
+      return null
+    }
+
     return <TabIcon
       data-test-id='closeTabIcon'
       data-test2-id={this.props.showCloseIcon ? 'close-icon-on' : 'close-icon-off'}
-      className={css(this.props.showCloseIcon && styles.closeTab)}
+      className={css(styles.closeTab)}
       l10nId='closeTabButton'
       onClick={this.onClick}
       onDragStart={this.onDragStart}
@@ -88,24 +79,18 @@ module.exports = ReduxComponent.connect(CloseTabIcon)
 
 const styles = StyleSheet.create({
   closeTab: {
-    position: 'relative',
-    paddingLeft: globalStyles.spacing.defaultIconPadding,
-    paddingRight: globalStyles.spacing.defaultIconPadding,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: globalStyles.spacing.closeIconSize,
-    width: globalStyles.spacing.closeIconSize,
-    height: globalStyles.spacing.closeIconSize,
-    border: '0',
-    zIndex: globalStyles.zindex.zindexTabs,
+    boxSizing: 'border-box',
     backgroundImage: `url(${closeTabSvg})`,
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: globalStyles.spacing.closeIconSize,
+    backgroundSize: spacing.closeIconSize,
+    // mask icon to gray to avoid calling another icon on hover
+    filter: 'invert(100%) grayscale(1) contrast(0.5) brightness(160%)',
     backgroundPosition: 'center center',
+    backgroundRepeat: 'no-repeat',
+    width: spacing.closeIconSize,
+    height: spacing.closeIconSize,
 
     ':hover': {
-      backgroundImage: `url(${closeTabHoverSvg})`
+      filter: 'none'
     }
   }
 })

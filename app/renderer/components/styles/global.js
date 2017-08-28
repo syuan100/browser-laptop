@@ -27,26 +27,26 @@ const globalStyles = {
     `, "Helvetica Neue", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans"` +
     `, "Droid Sans", sans-serif`,
 
+  intersection: {
+    // whereas 1 === 100%
+    noIntersection: 1,
+    at75: 0.75,
+    at60: 0.6,
+    at45: 0.45,
+    at35: 0.35,
+    at20: 0.2,
+    at15: 0.15
+  },
   breakpoint: {
     breakpointWideViewport: '1000px',
     breakpointNarrowViewport: '600px',
     breakpointExtensionButtonPadding: '720px',
     breakpointSmallWin32: '650px',
     breakpointTinyWin32: '500px',
-    breakpointNewPrivateTab: '890px',
-    tab: {
-      dynamic: '99999px', // add a large number as new spec will set tab width based on window size
-      default: '184px', // match tabArea max-width
-      large: '120px',
-      largeMedium: '83px',
-      medium: '66px',
-      mediumSmall: '53px',
-      small: '46px',
-      extraSmall: '40px',
-      smallest: '19px'
-    }
+    breakpointNewPrivateTab: '890px'
   },
   color: {
+    tabTitle: '#000000',
     commonTextColor: '#3b3b3b',
     linkColor: '#0099CC',
     highlightBlue: '#37A9FD',
@@ -127,6 +127,7 @@ const globalStyles = {
     carotRadius: '8px'
   },
   spacing: {
+    sentinelSize: '120px',
     navigatorHeight: '48px',
     defaultSpacing: '12px',
     defaultFontSize: '13px',
@@ -170,7 +171,7 @@ const globalStyles = {
     aboutPageSectionPadding: '24px',
     aboutPageSectionMargin: '10px',
     defaultTabPadding: '0 4px',
-    defaultIconPadding: '2px',
+    defaultIconPadding: '0 2px',
     iconSize: '16px',
     closeIconSize: '13px',
     narrowIconSize: '12px',
@@ -220,6 +221,7 @@ const globalStyles = {
     zindexWindowIsPreview: '1100',
     zindexDownloadsBar: '1000',
     zindexTabs: '1000',
+    zindexTabsAudioTopBorder: '10001',
     zindexTabsThumbnail: '1100',
     zindexTabsDragIndicator: '1100',
     zindexNavigationBar: '2000',
@@ -245,13 +247,10 @@ const globalStyles = {
     angleDoubleRight: 'fa fa-angle-double-right',
     clipboard: 'fa fa-clipboard',
     closeTab: 'fa fa-times-circle',
-    defaultIcon: 'fa fa-file-o',
     exclude: 'fa fa-ban',
     findNext: 'fa fa-caret-down',
     findPrev: 'fa fa-caret-up',
-    loading: 'fa fa-spinner fa-spin',
     moreInfo: 'fa fa-info-circle',
-    private: 'fa fa-eye',
     question: 'fa fa-question-circle',
     refresh: 'fa fa-refresh',
     remove: 'fa fa-times',

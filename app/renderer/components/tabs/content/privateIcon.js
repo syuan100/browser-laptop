@@ -9,39 +9,47 @@ const {StyleSheet, css} = require('aphrodite/no-important')
 const ReduxComponent = require('../../reduxComponent')
 const TabIcon = require('./tabIcon')
 
-// Utils
+// State
 const frameStateUtil = require('../../../../../js/state/frameStateUtil')
+const tabUIState = require('../../../../common/state/tabUIState')
+const tabState = require('../../../../common/state/tabState')
+const privateState = require('../../../../common/state/tabContentState/privateState')
 
 // Styles
 const globalStyles = require('../../styles/global')
-const tabStyles = require('../../styles/tab')
 const privateSvg = require('../../../../extensions/brave/img/tabs/private.svg')
 
 class PrivateIcon extends React.Component {
   mergeProps (state, ownProps) {
     const currentWindow = state.get('currentWindow')
     const frameKey = ownProps.frameKey
+    const tabId = frameStateUtil.getTabIdByFrameKey(currentWindow, frameKey)
+    const isPrivate = privateState.isPrivateTab(currentWindow, frameKey)
 
     const props = {}
-    // used in renderer
+    props.isPinned = tabState.isTabPinned(state, tabId)
     props.isActive = frameStateUtil.isFrameKeyActive(currentWindow, frameKey)
-
-    // used in functions
-    props.frameKey = frameKey
+    props.showPrivateIcon = tabUIState.showTabEndIcon(currentWindow, frameKey, isPrivate)
 
     return props
   }
 
   render () {
+    if (this.props.isPinned || !this.props.showPrivateIcon) {
+      return null
+    }
+
     const privateStyles = StyleSheet.create({
       icon: {
-        backgroundColor: this.props.isActive ? globalStyles.color.white100 : globalStyles.color.black100
+        backgroundColor: this.props.isActive
+          ? globalStyles.color.white100
+          : globalStyles.color.black100
       }
     })
 
     return <TabIcon
       data-test-id='privateIcon'
-      className={css(tabStyles.icon, styles.secondaryIcon, privateStyles.icon)}
+      className={css(styles.secondaryIcon, privateStyles.icon)}
     />
   }
 }
@@ -50,8 +58,12 @@ module.exports = ReduxComponent.connect(PrivateIcon)
 
 const styles = StyleSheet.create({
   secondaryIcon: {
+    boxSizing: 'border-box',
     WebkitMaskRepeat: 'no-repeat',
     WebkitMaskPosition: 'center',
-    WebkitMaskImage: `url(${privateSvg})`
+    WebkitMaskImage: `url(${privateSvg})`,
+    WebkitMaskSize: '15px',
+    width: '100%',
+    height: '100%'
   }
 })

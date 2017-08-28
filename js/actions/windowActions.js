@@ -1243,6 +1243,14 @@ const windowActions = {
       bookmarkKey,
       type
     })
+  },
+
+  setTabIntersectionState: function (isPinned, ratio) {
+    dispatch({
+      actionType: windowConstants.WINDOW_SET_TAB_CONTENT_INTERSECTION_STATE,
+      isPinned,
+      ratio
+    })
   }
 }
 

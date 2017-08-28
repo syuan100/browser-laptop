@@ -9,49 +9,47 @@ const {StyleSheet, css} = require('aphrodite/no-important')
 const ReduxComponent = require('../../reduxComponent')
 
 // State
-const tabContentState = require('../../../../common/state/tabContentState')
+const tabState = require('../../../../common/state/tabState')
+const tabUIState = require('../../../../common/state/tabUIState')
+const titleState = require('../../../../common/state/tabContentState/titleState')
+const frameStateUtil = require('../../../../../js/state/frameStateUtil')
 
 // Utils
-const platformUtil = require('../../../../common/lib/platformUtil')
-const isWindows = platformUtil.isWindows()
-const isDarwin = platformUtil.isDarwin()
+const {isWindows, isDarwin} = require('../../../../common/lib/platformUtil')
 
 // Styles
-const globalStyles = require('../../styles/global')
+const {fontSize} = require('../../styles/global')
 
 class TabTitle extends React.Component {
   mergeProps (state, ownProps) {
     const currentWindow = state.get('currentWindow')
     const frameKey = ownProps.frameKey
-    const tabIconColor = tabContentState.getTabIconColor(currentWindow, frameKey)
+    const tabId = frameStateUtil.getTabIdByFrameKey(currentWindow, frameKey)
 
     const props = {}
-    // used in renderer
-    props.enforceFontVisibility = isDarwin && tabIconColor === 'white'
-    props.tabIconColor = tabIconColor
-    props.displayTitle = tabContentState.getDisplayTitle(currentWindow, frameKey)
-
-    // used in functions
-    props.frameKey = frameKey
+    props.isWindows = isWindows()
+    props.isDarwin = isDarwin()
+    props.isPinned = tabState.isTabPinned(state, tabId)
+    props.addExtraGutter = tabUIState.titleHasExtraGutter(currentWindow, frameKey)
+    props.isTextWhite = tabUIState.checkIfTextColor(currentWindow, frameKey, 'white')
+    props.displayTitle = titleState.getDisplayTitle(currentWindow, frameKey)
+    props.showTabTitle = titleState.showTabTitle(currentWindow, frameKey)
 
     return props
   }
 
   render () {
-    const titleStyles = StyleSheet.create({
-      gradientText: {
-        backgroundImage: `-webkit-linear-gradient(left,
-        ${this.props.tabIconColor} 90%, ${globalStyles.color.almostInvisible} 100%)`
-      }
-    })
+    if (this.props.isPinned || !this.props.showTabTitle) {
+      return null
+    }
 
     return <div data-test-id='tabTitle'
       className={css(
         styles.tabTitle,
-        titleStyles.gradientText,
-        this.props.enforceFontVisibility && styles.enforceFontVisibility,
+        this.props.addExtraGutter && styles.tabTitle_extraGutter,
+        (this.props.isDarwin && this.props.isTextWhite) && styles.tabTitle_bold,
         // Windows specific style
-        isWindows && styles.tabTitleForWindows
+        this.props.isWindows && styles.tabTitle_windows
       )}>
       {this.props.displayTitle}
     </div>
@@ -62,27 +60,25 @@ module.exports = ReduxComponent.connect(TabTitle)
 
 const styles = StyleSheet.create({
   tabTitle: {
-    display: 'flex',
-    flex: '1',
-    userSelect: 'none',
     boxSizing: 'border-box',
-    fontSize: globalStyles.fontSize.tabTitle,
-    overflow: 'hidden',
-    whiteSpace: 'nowrap',
+    display: 'flex',
+    flex: 1,
+    userSelect: 'none',
+    fontSize: fontSize.tabTitle,
     lineHeight: '1.6',
-    padding: globalStyles.spacing.defaultTabPadding,
-    color: 'transparent',
-    WebkitBackgroundClip: 'text',
-    // prevents the title from being the target of mouse events.
-    pointerEvents: 'none'
+    minWidth: 0 // see https://stackoverflow.com/a/36247448/4902448
   },
 
-  enforceFontVisibility: {
-    fontWeight: '600'
+  tabTitle_bold: {
+    fontWeight: '400'
   },
 
-  tabTitleForWindows: {
+  tabTitle_windows: {
     fontWeight: '500',
-    fontSize: globalStyles.fontSize.tabTitle
+    fontSize: fontSize.tabTitle
+  },
+
+  tabTitle_extraGutter: {
+    margin: '0 6px'
   }
 })

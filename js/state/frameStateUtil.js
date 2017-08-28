@@ -15,6 +15,7 @@ const appActions = require('../actions/appActions')
 
 // State
 const {makeImmutable} = require('../../app/common/state/immutableUtil')
+const tabState = require('../../app/common/state/tabState')
 
 // Utils
 const {getSetting} = require('../settings')
@@ -413,6 +414,10 @@ function removeFrame (state, frameProps, framePropsIndex) {
   }
 }
 
+const getActiveTabPageIndex = (state) => {
+  return state.getIn(['ui', 'tabs', 'tabPageIndex'])
+}
+
 function getFrameTabPageIndex (state, tabId, tabsPerTabPage = getSetting(settings.TABS_PER_PAGE)) {
   const index = findNonPinnedDisplayIndexForTabId(state, tabId)
   if (index === -1) {
@@ -706,6 +711,23 @@ const setTabHoverState = (state, frameKey, hoverState, enablePreviewMode) => {
   return state
 }
 
+const getTabPageIndex = (state) => {
+  const tabPageIndex = state.getIn(['ui', 'tabs', 'tabPageIndex'], 0)
+  const previewTabPageIndex = state.getIn(['ui', 'tabs', 'previewTabPageIndex'])
+
+  return previewTabPageIndex != null ? previewTabPageIndex : tabPageIndex
+}
+
+const hasFrame = (state, frameKey) => {
+  const frame = getFrameByKey(state, frameKey)
+  return !frame.isEmpty()
+}
+
+const getTabIdByFrameKey = (state, frameKey) => {
+  const frame = getFrameByKey(state, frameKey)
+  return frame.get('tabId', tabState.TAB_ID_NONE)
+}
+
 module.exports = {
   setTabPageHoverState,
   setPreviewTabPageIndex,
@@ -736,6 +758,8 @@ module.exports = {
   getFrameIndex,
   getActiveFrameIndex,
   getActiveFrameTabId,
+  getActiveTabPageIndex,
+  getTabPageIndex,
   getFrameByIndex,
   getFrameByDisplayIndex,
   getFrameByKey,
@@ -766,5 +790,7 @@ module.exports = {
   isValidClosedFrame,
   getTabPageCount,
   getSortedFrameKeys,
-  frameStatePathByTabId
+  frameStatePathByTabId,
+  hasFrame,
+  getTabIdByFrameKey
 }
