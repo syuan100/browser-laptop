@@ -261,6 +261,7 @@ describe('sessionStore unit tests', function () {
         const data = Immutable.fromJS({
           perWindowState: ['window1', 'window2']
         })
+        console.log(data)
         sessionStore.cleanAppData(data, 'IS_SHUTDOWN_VALUE')
         assert.equal(cleanPerWindowDataStub.withArgs('window1', 'IS_SHUTDOWN_VALUE').calledOnce, true)
         assert.equal(cleanPerWindowDataStub.withArgs('window2', 'IS_SHUTDOWN_VALUE').calledOnce, true)

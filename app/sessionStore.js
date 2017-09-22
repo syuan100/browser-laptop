@@ -37,7 +37,7 @@ const filtering = require('./filtering')
 const autofill = require('./autofill')
 const {navigatableTypes} = require('../js/lib/appUrlUtil')
 const Channel = require('./channel')
-const {isImmutable, makeImmutable, deleteImmutablePaths} = require('./common/state/immutableUtil')
+const {isImmutable, isMap, makeImmutable, deleteImmutablePaths} = require('./common/state/immutableUtil')
 const {getSetting} = require('../js/settings')
 const platformUtil = require('./common/lib/platformUtil')
 const historyUtil = require('./common/lib/historyUtil')
@@ -413,6 +413,20 @@ module.exports.cleanAppData = (immutableData, isShutdown) => {
       immutableData = immutableData.deleteIn(['extensions', extensionId, 'tabs'])
     })
   }
+
+  // Remove windowState from perWindowState if there are no frames
+  if (perWindowStateList) {
+    perWindowStateList.forEach((immutablePerWindowState, i) => {
+      if (isMap(immutablePerWindowState)) {
+        if (immutablePerWindowState.has('frames')) {
+          if (!immutablePerWindowState.get('frames').size) {
+            immutableData = immutableData.deleteIn(['perWindowState', i])
+          }
+        }
+      }
+    })
+  }
+
   return immutableData
 }
 
